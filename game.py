@@ -106,7 +106,7 @@ class Board:
 		return corner
 
 
-	def add_piece(self, piece, topleft, colour: int):
+	def add_piece(self, piece, topleft, colour: int) -> bool:
 		"""
 		:param piece: matrice de type
 		:param topleft: position du carré (x, y)
@@ -121,12 +121,14 @@ class Board:
 			for i, row in enumerate(piece):
 				for j, stat in enumerate(row):
 					# Add to status board
-					self.status[i + y][j + x][colour] = piece[i][j]
+					self.status[i + y + 1][j + x + 1][colour] = piece[i][j]
 					# Draw to surface
 					if stat == 1:
 						pg.draw.rect(self.pieces_positions, PlAYER_COLOUR[colour],
 								(self.real_position(j + x), self.real_position(i + y),
 								 SQUARE_SIZE, SQUARE_SIZE))
+			return True
+		return False
 
 
 	def playable(self, pieces_restantes, colour):
@@ -146,7 +148,7 @@ class Board:
 		i = (x - (self.rect.left + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
 		j = (y - (self.rect.top + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
 
-		self.add_piece(piece.piece_matrix, (i,j), piece.colour)
+		return self.add_piece(piece.piece_matrix, (i,j), piece.colour)
 
 
 class Game:
@@ -195,9 +197,11 @@ class Game:
 						self.clicked = False
 						if self.pieces_management.selected_piece is not None:
 							if self.table.rect.collidepoint(mx, my):
-								self.table.dynamic_add(mx, my, self.pieces_management.selected_piece)
-								self.table.print(self.current_colour)
-								self.pieces_management.remove(self.current_colour)
+								moved = self.table.dynamic_add(mx, my, self.pieces_management.selected_piece)
+								if DEBUG_MODE:
+									self.table.print(self.current_colour)
+								if moved :
+									self.pieces_management.remove(self.current_colour)
 							self.pieces_management.unselect()
 
 
