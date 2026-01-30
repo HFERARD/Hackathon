@@ -4,6 +4,37 @@ from pieces import get_piece
 from locals import *
 
 
+class PiecesManagement: # Pour 4 joueurs à update pour moins
+	def __init__(self):
+		self.selected_piece : Piece | None = None
+
+		self.pieces = {colour : pg.sprite.Group() for colour in PLAYERS}
+
+		for colour in PLAYERS :
+			for i in range(1, 22):
+				self.pieces[colour].add(Piece.from_id(str(i), colour))
+
+
+	def select_piece(self, x, y, colour):
+		"""
+		takes in mouse position and checks whether a piece can be selected
+		"""
+		for piece in self.pieces[colour]:
+			if piece.rect.collidepoint(x, y):
+				self.selected_piece = piece
+
+	def unselect(self):
+		self.selected_piece = None
+
+
+	def update(self, x, y):
+		if self.selected_piece is not None:
+			self.selected_piece.set_position(x, y)
+
+	def draw(self, surface: pg.surface):
+		surface.blit(self.selected_piece.image, self.selected_piece.rect)
+
+
 class Piece(pg.sprite.Sprite):
 	def __init__(self, piece_matrix, colour: int):
 		pg.sprite.Sprite.__init__(self)
@@ -13,6 +44,13 @@ class Piece(pg.sprite.Sprite):
 
 	@staticmethod
 	def image_from_matrix(piece_matrix, colour):
+		"""
+		Creates an image from a standard piece_matrix which can be drawn onto screen for animation
+
+		:param piece_matrix:
+		:param colour:
+		:return:
+		"""
 		height, width = (len(piece_matrix) - 2, len(piece_matrix[0]) - 2)
 		pixel_height, pixel_width = (width * SQUARE_SIZE + (width - 1) * LINE_WIDTH,
 									 height * SQUARE_SIZE + (height - 1) * LINE_WIDTH)
@@ -29,11 +67,14 @@ class Piece(pg.sprite.Sprite):
 					pygame.draw.rect(surface, PlAYER_COLOUR[colour], (x, y, SQUARE_SIZE, SQUARE_SIZE))
 
 
-
-
 	@classmethod
-	def from_piece(cls, piece_matrix):
-		height, width = ..., ...
+	def from_id(cls, id_, colour):
+		"""
+		:param id_:
+		:param colour:
+		:return:
+		"""
+		return cls(get_piece(id_), colour)
 
 
 	def set_position(self, x, y):
