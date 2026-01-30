@@ -5,9 +5,9 @@ from locals import *
 from graphics import PiecesManagement, Piece
 #from pieces import get_piece
 
-SIZE = (1000, 800)
 pg.font.init()
-
+DEBUG_MODE = True
+SIZE = (1400, 800)
 
 """
 -1 : case non-jouable pour le joueur selectionné
@@ -68,7 +68,7 @@ class Board:
 		self.surface = pg.Surface((K, K))
 		self.surface.fill(WHITEc)
 		self.rect = self.surface.get_rect()
-		self.rect.center = (500, 400)
+		self.rect.center = (700, 400)
 
 		self.dynamic_overlay = self.surface.copy()
 		self.dynamic_overlay.set_colorkey(WHITEc)
@@ -80,7 +80,7 @@ class Board:
 
 		# Positions setup --------------------------
 
-		self.status = [[[0, 0, 0, 0] for i in range(N)] for j in range(N)] # status of the board at current state
+		self.status = [[[0, 0, 0, 0] for i in range(N+2)] for j in range(N+2)] # status of the board at current state
 		for i in range(0,N+2):
 			self.status[i][0] = [-1, -1, -1, -1]
 			self.status[i][N+1] = [-1, -1, -1, -1]
@@ -105,6 +105,7 @@ class Board:
 				print(stat[colour], end='|')
 			print()
 			print(2 * (N+1) * '-')
+
 
 	def draw_grid(self):
 		for i in range(N + 1):
@@ -139,7 +140,7 @@ class Board:
 		return corner
 
 
-	def add_piece(self, piece, topleft, colour: int):
+	def add_piece(self, piece, topleft, colour: int) -> bool:
 		"""
 		:param piece: matrice de type
 		:param topleft: position du carré (x, y)
@@ -156,14 +157,15 @@ class Board:
 					# Add to status board
 					case = self.status[i + y + 1][j + x + 1][colour]
 					if case == 0:
-						self.status[i + y + 1][j + x + 1][colour] = -1
-					elif case == 10 and piece[i][j] == -1:
 						self.status[i + y + 1][j + x + 1][colour] = piece[i][j]
-					elif case == 10 and piece[i][j] == 1:
+					elif case == 10 and (piece[i][j] == -1 or piece[i][j] == 1):
+						self.status[i + y + 1][j + x + 1][colour] = piece[i][j]
+					
+					if self.status[i + y + 1 ][j + x + 1][colour] == 1:
 						for c in [0, 1, 2, 3]:
-							self.status[i + y + 1][j + x + 1][c] = -1
-						self.status[i + y + 1][j + x + 1][colour] = 1
-
+							if c != colour:
+								self.status[i + y + 1][j + x + 1][c] = -1
+					
 					# Draw to surface
 					if stat == 1:
 						pg.draw.rect(self.pieces_positions, PlAYER_COLOUR[colour],
@@ -172,12 +174,14 @@ class Board:
 			return True
 		return False
 
+
 	def playable(self, pieces_restantes, colour):
 		for piece in pieces_restantes[colour]:
 			for topleft in [[(x, y) for x in range(N)] for y in range(N)]:
 				if self.valid_move(piece, topleft, colour):
 					return True
 		return False
+
 
 	def draw(self, surface : pg.Surface):
 		surface.blit(self.surface, self.rect)
@@ -216,6 +220,7 @@ class Game:
 		self.clicked = True
 
 		self.current_colour = RED
+		self.current_index = 0
 		
 	def run(self):
 		"""
@@ -242,37 +247,45 @@ class Game:
 			
 			elif self.status==1:
 				self.SCREEN.fill(GREYc)
-			mx, my = pg.mouse.get_pos()
+				mx, my = pg.mouse.get_pos()
 
-			for event in pg.event.get():
-				if event.type == pg.QUIT:
-					self.running = False
+				for event in pg.event.get():
+					if event.type == pg.QUIT:
+						self.running = False
 
-				if event.type == pg.MOUSEBUTTONDOWN:
-					if event.button == 1:
-						self.clicked = True
-						self.pieces_management.select_piece(mx, my, self.current_colour)
-				if event.type == pg.MOUSEBUTTONUP:
-					if event.button == 1:
-						self.clicked = False
-						if self.pieces_management.selected_piece is not None:
-							if self.table.rect.collidepoint(mx, my):
-								moved = self.table.dynamic_add(mx, my, self.pieces_management.selected_piece)
-								if DEBUG_MODE:
-									self.table.print(self.current_colour)
-								if moved :
-									self.pieces_management.remove(self.current_colour)
-							self.pieces_management.unselect()
+					if event.type == pg.MOUSEBUTTONDOWN:
+						if event.button == 1:
+							self.clicked = True
+							self.pieces_management.select_piece(mx, my, self.current_colour)
+					if event.type == pg.MOUSEBUTTONUP:
+						if event.button == 1:
+							self.clicked = False
+							if self.pieces_management.selected_piece is not None:
+								if self.table.rect.collidepoint(mx, my):
+									moved = self.table.dynamic_add(mx, my, self.pieces_management.selected_piece)
+									if DEBUG_MODE:
+										self.table.print(self.current_colour)
+									if moved :
+										self.pieces_management.remove(self.current_colour)
+										self.current_index = (self.current_index + 1) % 4
+										self.current_colour = PLAYERS[self.current_index]
+								self.pieces_management.unselect()
+					if event.type == pg.KEYDOWN:
+						if event.key == pg.K_SPACE:
+							if self.pieces_management.selected_piece is not None:
+								self.pieces_management.selected_piece.rotate()
+								print('aaaahh')
 
 
 			# Draw table
-			self.table.draw(self.SCREEN)
+				self.table.draw(self.SCREEN)
 
 
 			# Update and draw pieces before they appear on the board
-			self.pieces_management.draw(self.SCREEN)
-			if self.clicked:
-				self.pieces_management.update(mx, my)
+				self.pieces_management.draw(self.SCREEN)
+				if self.clicked:
+					self.pieces_management.update(mx, my)
+
 
 
 			pg.display.update()
