@@ -89,7 +89,7 @@ class Board:
 		Adds piece to the status matrix if move is valid and draws piece to board surface
 		"""
 
-		x, y = (topleft[0] + 1, topleft[1] + 1)
+		x, y = (topleft[0] - 1, topleft[1] - 1)
 		if self.valid_move(piece, colour):
 			for i, row in enumerate(piece):
 				for j, stat in enumerate(row):
