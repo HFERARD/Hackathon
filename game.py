@@ -45,13 +45,23 @@ class Board:
 			pg.draw.line(self.surface, BLACKc,
 						 (0, i * (SQUARE_SIZE + LINE_WIDTH)), (K, i * (SQUARE_SIZE + LINE_WIDTH)), width=LINE_WIDTH)
 
-	def valid_move(self, piece, colour):
+	def valid_move(self, piece, topleft, colour):
 		""" For a piece of colour :colour:, return if this move is valid:
 			- Corner connection
 			- No edges from same colour touch
 		"""
-
-		return True
+		lignes = len(piece)
+		colonnes = len(piece[0])
+		corner = False # vérifie si deux coins se touchent càd si la pièce recouvre au moins un 10
+		for i in range(colonnes):
+			for j in range(lignes):
+				x, y = (i, j) + topleft # coordonnées
+				if piece[i][j] == 1:
+					if self.status[x][y][colour] == -1: # Case non-jouable
+						return False
+					if self.status[x][y][colour] == 10: # Case adjacente à un coin
+						corner = True
+		return corner
 
 
 	def add_piece(self, piece ):
