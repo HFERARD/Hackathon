@@ -1,3 +1,4 @@
+#Ce fichier est indépendant
 import pygame as pg
 import sys
 from locals import *
@@ -49,9 +50,11 @@ class Textblock(Block):
 
 	def update(self):
 		if self.mouse_on_block():
-			self.font = pg.font.SysFont(name= "Arial", size= 40)
-			self.text= self.font.render(self.tag, True, BLACKc)
+			self.surface.fill(BLACKc)
+			self.font = pg.font.SysFont(name= "Arial", size= 30)
+			self.text= self.font.render(self.tag, True, WHITEc)
 		else:
+			self.surface.fill(WHITEc)
 			self.font = pg.font.SysFont(name= "Arial", size= 30)
 			self.text= self.font.render(self.tag, True, BLACKc)
 
