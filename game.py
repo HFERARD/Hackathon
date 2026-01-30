@@ -7,7 +7,7 @@ from graphics import PiecesManagement, Piece
 pg.font.init()
 
 # IMPLEMENTATION / TEST
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 
 # ----------------------
@@ -141,8 +141,8 @@ class Board:
 		return False
 
 
-	def playable(self, pieces_restantes, colour):
-		for piece in pieces_restantes[colour]:
+	def playable(self, remaining_pieces, colour):
+		for piece in remaining_pieces[colour]:
 			for topleft in [[(x, y) for x in range(N)] for y in range(N)]:
 				if self.valid_move(piece, topleft, colour):
 					return True
@@ -159,6 +159,12 @@ class Board:
 		j = (y - (self.rect.top + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
 
 		return self.add_piece(piece.piece_matrix, (i,j), piece.colour)
+
+	def shadow_piece(self, ):
+		pass
+
+	def erase_shadow(self):
+		self.dynamic_overlay.fill(WHITEc)
 
 
 class Game:
