@@ -111,6 +111,13 @@ class Board:
 								(self.real_position(j + x), self.real_position(i + y),
 								 SQUARE_SIZE, SQUARE_SIZE))
 
+	def playable(self, pieces_restantes, colour):
+		for piece in pieces_restantes[colour]:
+			for topleft in [[(x, y) for x in range(N)] for y in range(N)]:
+				if self.valid_move(piece, topleft, colour):
+					return True
+		return False
+
 	def update(self):
 		pass
 
