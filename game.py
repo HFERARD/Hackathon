@@ -4,6 +4,15 @@ from locals import *
 from graphics import PiecesManagement, Piece
 #from pieces import get_piece
 
+pg.font.init()
+
+# IMPLEMENTATION / TEST
+DEBUG_MODE = True
+
+
+# ----------------------
+
+
 SIZE = (1000, 800)
 
 
@@ -54,6 +63,14 @@ class Board:
 	@staticmethod
 	def real_position(i):
 		return SQUARE_SIZE * i + (i + 1) * LINE_WIDTH
+
+	def print(self, colour):
+		for row in self.status:
+			print('|', end='')
+			for stat in row:
+				print(stat[colour], end='|')
+			print()
+			print(2 * (N+1) * '-')
 
 
 	def draw_grid(self):
@@ -111,15 +128,13 @@ class Board:
 								(self.real_position(j + x), self.real_position(i + y),
 								 SQUARE_SIZE, SQUARE_SIZE))
 
+
 	def playable(self, pieces_restantes, colour):
 		for piece in pieces_restantes[colour]:
 			for topleft in [[(x, y) for x in range(N)] for y in range(N)]:
 				if self.valid_move(piece, topleft, colour):
 					return True
 		return False
-
-	def update(self):
-		pass
 
 
 	def draw(self, surface : pg.Surface):
@@ -132,8 +147,6 @@ class Board:
 		j = (y - (self.rect.top + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
 
 		self.add_piece(piece.piece_matrix, (i,j), piece.colour)
-
-
 
 
 class Game:
@@ -183,6 +196,7 @@ class Game:
 						if self.pieces_management.selected_piece is not None:
 							if self.table.rect.collidepoint(mx, my):
 								self.table.dynamic_add(mx, my, self.pieces_management.selected_piece)
+								self.table.print(self.current_colour)
 								self.pieces_management.remove(self.current_colour)
 							self.pieces_management.unselect()
 
