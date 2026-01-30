@@ -17,6 +17,19 @@ BLUEc = (0, 0, 255)
 YELLOWc = (255, 255, 0)
 GREYc = (128, 128, 128)
 
+
+PlAYER_COLOUR = {
+	RED : REDc, BLUE : BLUEc, YELLOW : YELLOWc, GREEN : GREENc
+}
+
+"""
+-1 : case non-jouable pour le joueur selectionné
+0 : case vide 
+1 : case remplie par le joueur
+10 : case adjecent à un coin (au moins une par tour)
+
+"""
+
 # offset de 11 de chaque coté du tableau
 
 class Board:
@@ -34,19 +47,32 @@ class Board:
 
 		# Positions setup --------------------------
 
-		self.status = [[0 for i in range(N)] for j in range(N)] # status of the board at current state
+		self.status = [[[0, 0, 0, 0] for i in range(N)] for j in range(N)] # status of the board at current state
+		# sur chaque case [joueur1, joueur2, joueur3, joueur4]
+
+		self.add_piece()
+
+	@staticmethod
+	def real_position(i):
+		return SQUARE_SIZE * i + (i + 1) * LINE_WIDTH
 
 
 	def draw_grid(self):
 		for i in range(N + 1):
 			K = self.surface.get_size()[0]
 			pg.draw.line(self.surface, BLACKc,
-						 (i * (SQUARE_SIZE + LINE_WIDTH), 0), (i * (SQUARE_SIZE + LINE_WIDTH), K), width=LINE_WIDTH)
+						 (i * (SQUARE_SIZE + LINE_WIDTH), 0),
+						 (i * (SQUARE_SIZE + LINE_WIDTH), K),
+						 width=LINE_WIDTH)
 			pg.draw.line(self.surface, BLACKc,
-						 (0, i * (SQUARE_SIZE + LINE_WIDTH)), (K, i * (SQUARE_SIZE + LINE_WIDTH)), width=LINE_WIDTH)
+						 (0, i * (SQUARE_SIZE + LINE_WIDTH)),
+						 (K, i * (SQUARE_SIZE + LINE_WIDTH)),
+						 width=LINE_WIDTH)
+
 
 	def valid_move(self, piece, colour):
-		""" For a piece of colour :colour:, return if this move is valid:
+		"""
+		For a piece of colour :colour:, return if this move is valid:
 			- Corner connection
 			- No edges from same colour touch
 		"""
@@ -54,13 +80,31 @@ class Board:
 		return True
 
 
-	def add_piece(self, piece ):
-		pass
+	def add_piece(self, piece, topleft, colour: int):
+		"""
+		:param piece: matrice de type
+		:param topleft: position du carré (x, y)
+		:param colour: couleur du joueur (constante int)
+		:return: None
+
+		Adds piece to the status matrix if move is valid and draws piece to board surface
+		"""
+
+		x, y = (topleft[0] + 1, topleft[1] + 1)
+		if self.valid_move(piece, colour):
+			for i, row in enumerate(piece):
+				for j, stat in enumerate(row):
+					# Add to status board
+					self.status[i + x][j + y][colour] = piece[i][j]
+					# Draw to surface
+					if stat == 1:
+						pg.draw.rect(self.surface, PlAYER_COLOUR[colour],
+								(self.real_position(i + x), self.real_position(j + y) ,
+								 SQUARE_SIZE, SQUARE_SIZE))
 
 
 	def draw(self, surface : pg.Surface):
 		surface.blit(self.surface, self.rect)
-
 
 
 
