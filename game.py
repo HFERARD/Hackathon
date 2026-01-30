@@ -121,7 +121,11 @@ class Board:
 			for i, row in enumerate(piece):
 				for j, stat in enumerate(row):
 					# Add to status board
-					self.status[i + y + 1][j + x + 1][colour] = piece[i][j]
+					case = self.status[i + y + 1][j + x + 1][colour]
+					if case == 0:
+						self.status[i + y + 1][j + x + 1][colour] = piece[i][j]
+					elif case == 10 and (piece[i][j] == -1 or piece[i][j] == 1):
+						self.status[i + y + 1][j + x + 1][colour] = piece[i][j]
 					# Draw to surface
 					if stat == 1:
 						pg.draw.rect(self.pieces_positions, PlAYER_COLOUR[colour],
