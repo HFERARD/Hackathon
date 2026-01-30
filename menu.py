@@ -2,11 +2,10 @@
 import pygame as pg
 import sys
 from locals import *
-
+from graphics import PiecesManagement, Piece
 #from pieces import get_piece
 
 SIZE = (1000, 800)
-
 pg.font.init()
 
 
@@ -82,6 +81,15 @@ class Board:
 		# Positions setup --------------------------
 
 		self.status = [[[0, 0, 0, 0] for i in range(N)] for j in range(N)] # status of the board at current state
+		for i in range(0,N+2):
+			self.status[i][0] = [-1, -1, -1, -1]
+			self.status[i][N+1] = [-1, -1, -1, -1]
+			self.status[0][i] = [-1, -1, -1, -1]
+			self.status[N+1][i] = [-1, -1, -1, -1]
+		self.status[1][1] = [10,10,10,10]
+		self.status[1][N] = [10,10,10,10]
+		self.status[N][1] = [10,10,10,10]
+		self.status[N][N] = [10,10,10,10]
 		# sur chaque case [joueur1, joueur2, joueur3, joueur4]
 
 		#self.add_piece()
@@ -90,6 +98,13 @@ class Board:
 	def real_position(i):
 		return SQUARE_SIZE * i + (i + 1) * LINE_WIDTH
 
+	def print(self, colour):
+		for row in self.status:
+			print('|', end='')
+			for stat in row:
+				print(stat[colour], end='|')
+			print()
+			print(2 * (N+1) * '-')
 
 	def draw_grid(self):
 		for i in range(N + 1):
@@ -113,13 +128,13 @@ class Board:
 		lignes = len(piece)
 		colonnes = len(piece[0])
 		corner = False # vérifie si deux coins se touchent càd si la pièce recouvre au moins un 10
-		for i in range(colonnes):
-			for j in range(lignes):
-				x, y = (i, j) + topleft # coordonnées
+		for j in range(colonnes):
+			for i in range(lignes):
+				x, y = (j + topleft[0], i + topleft[1])  # coordonnées
 				if piece[i][j] == 1:
-					if self.status[x][y][colour] == -1: # Case non-jouable
+					if self.status[y][x][colour] == -1: # Case non-jouable
 						return False
-					if self.status[x][y][colour] == 10: # Case adjacente à un coin
+					if self.status[y][x][colour] == 10: # Case adjacente à un coin
 						corner = True
 		return corner
 
@@ -135,25 +150,45 @@ class Board:
 		"""
 
 		x, y = (topleft[0] - 1, topleft[1] - 1)
-		if self.valid_move(piece, colour):
+		if self.valid_move(piece, topleft, colour):
 			for i, row in enumerate(piece):
 				for j, stat in enumerate(row):
 					# Add to status board
-					self.status[i + x][j + y][colour] = piece[i][j]
+					case = self.status[i + y + 1][j + x + 1][colour]
+					if case == 0:
+						self.status[i + y + 1][j + x + 1][colour] = -1
+					elif case == 10 and piece[i][j] == -1:
+						self.status[i + y + 1][j + x + 1][colour] = piece[i][j]
+					elif case == 10 and piece[i][j] == 1:
+						for c in [0, 1, 2, 3]:
+							self.status[i + y + 1][j + x + 1][c] = -1
+						self.status[i + y + 1][j + x + 1][colour] = 1
+
 					# Draw to surface
 					if stat == 1:
 						pg.draw.rect(self.pieces_positions, PlAYER_COLOUR[colour],
-								(self.real_position(i + x), self.real_position(j + y) ,
+								(self.real_position(j + x), self.real_position(i + y),
 								 SQUARE_SIZE, SQUARE_SIZE))
+			return True
+		return False
 
-	def update(self):
-		pass
-
+	def playable(self, pieces_restantes, colour):
+		for piece in pieces_restantes[colour]:
+			for topleft in [[(x, y) for x in range(N)] for y in range(N)]:
+				if self.valid_move(piece, topleft, colour):
+					return True
+		return False
 
 	def draw(self, surface : pg.Surface):
 		surface.blit(self.surface, self.rect)
 		surface.blit(self.dynamic_overlay, self.rect)
 		surface.blit(self.pieces_positions, self.rect)
+
+	def dynamic_add(self, x, y, piece: Piece):
+		i = (x - (self.rect.left + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
+		j = (y - (self.rect.top + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
+
+		return self.add_piece(piece.piece_matrix, (i,j), piece.colour)
 
 
 class Game:
@@ -168,10 +203,20 @@ class Game:
 
 		pg.display.set_caption('Blokus | Game by MPVH')
 
+	#Game variables -----
+
 		self.button = Textblock('Start')
+
 		self.table = Board()
+
 		self.status = 0 #Status égale 0 si on est sur le menu de base et 1 si on est sur la grille
 
+		self.pieces_management = PiecesManagement()
+
+		self.clicked = True
+
+		self.current_colour = RED
+		
 	def run(self):
 		"""
 		Main game loop
@@ -179,9 +224,9 @@ class Game:
 		- return None
 		"""
 		while self.running:
-			self.SCREEN.fill(GREYc)
+			
 			if self.status==0:
-
+				self.SCREEN.fill(GREENc)
 				for event in pg.event.get():
 					if event.type == pg.QUIT:
 						self.running = False
@@ -196,15 +241,39 @@ class Game:
 				self.button.draw(self.SCREEN)
 			
 			elif self.status==1:
-				for event in pg.event.get():
-					if event.type == pg.QUIT:
-						self.running = False
+				self.SCREEN.fill(GREYc)
+			mx, my = pg.mouse.get_pos()
 
-					if event.type == pg.MOUSEBUTTONDOWN:
-						if event.button == 1:
-							mouse_position = pg.mouse.get_pos()
+			for event in pg.event.get():
+				if event.type == pg.QUIT:
+					self.running = False
 
-				self.table.draw(self.SCREEN)
+				if event.type == pg.MOUSEBUTTONDOWN:
+					if event.button == 1:
+						self.clicked = True
+						self.pieces_management.select_piece(mx, my, self.current_colour)
+				if event.type == pg.MOUSEBUTTONUP:
+					if event.button == 1:
+						self.clicked = False
+						if self.pieces_management.selected_piece is not None:
+							if self.table.rect.collidepoint(mx, my):
+								moved = self.table.dynamic_add(mx, my, self.pieces_management.selected_piece)
+								if DEBUG_MODE:
+									self.table.print(self.current_colour)
+								if moved :
+									self.pieces_management.remove(self.current_colour)
+							self.pieces_management.unselect()
+
+
+			# Draw table
+			self.table.draw(self.SCREEN)
+
+
+			# Update and draw pieces before they appear on the board
+			self.pieces_management.draw(self.SCREEN)
+			if self.clicked:
+				self.pieces_management.update(mx, my)
+
 
 			pg.display.update()
 			self.CLOCK.tick(self.FPS)

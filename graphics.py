@@ -1,6 +1,6 @@
 import pygame
 import pygame as pg
-from pieces import get_piece
+from pieces import get_piece, rotation_sens_trigo
 from locals import *
 
 
@@ -128,6 +128,10 @@ class Piece(pg.sprite.Sprite):
 	def set_default_position(self, x, y):
 		self.default_position = (x, y)
 		self.set_position(x, y)
+
+	def rotate(self):
+		self.piece_matrix = rotation_sens_trigo(self.piece_matrix)
+		self.image = self.image_from_matrix(self.piece_matrix, self.colour)
 
 	def draw(self, surface : pg.Surface):
 		surface.blit(self.image, self.rect)
