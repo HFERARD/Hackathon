@@ -19,6 +19,7 @@ GREENc = (0, 255, 0)
 BLUEc = (0, 0, 255)
 YELLOWc = (255, 255, 0)
 GREYc = (128, 128, 128)
+MENU_BLUE = (116, 153, 153)
 
 
 PlAYER_COLOUR = {
