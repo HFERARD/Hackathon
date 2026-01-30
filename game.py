@@ -1,8 +1,9 @@
 import pygame as pg
 from sys import exit
 from locals import RED, BLUE, GREEN, YELLOW
+#from pieces import get_piece
 
-SIZE = (1000, 600)
+SIZE = (1000, 800)
 
 SQUARE_SIZE = 27
 LINE_WIDTH = 2
@@ -40,7 +41,10 @@ class Board:
 		self.surface = pg.Surface((K, K))
 		self.surface.fill(WHITEc)
 		self.rect = self.surface.get_rect()
-		self.rect.center = (500, 300)
+		self.rect.center = (500, 400)
+
+		self.dynamic_overlay = self.surface.copy().set_colorkey(WHITEc)
+		self.pieces_positions = self.surface.copy().set_colorkey(WHITEc)
 
 		self.draw_grid()
 
@@ -50,7 +54,7 @@ class Board:
 		self.status = [[[0, 0, 0, 0] for i in range(N)] for j in range(N)] # status of the board at current state
 		# sur chaque case [joueur1, joueur2, joueur3, joueur4]
 
-		self.add_piece()
+		#self.add_piece()
 
 	@staticmethod
 	def real_position(i):
@@ -76,7 +80,6 @@ class Board:
 			- Corner connection
 			- No edges from same colour touch
 		"""
-
 		return True
 
 
@@ -98,13 +101,18 @@ class Board:
 					self.status[i + x][j + y][colour] = piece[i][j]
 					# Draw to surface
 					if stat == 1:
-						pg.draw.rect(self.surface, PlAYER_COLOUR[colour],
+						pg.draw.rect(self.pieces_positions, PlAYER_COLOUR[colour],
 								(self.real_position(i + x), self.real_position(j + y) ,
 								 SQUARE_SIZE, SQUARE_SIZE))
+
+	def update(self):
+		pass
 
 
 	def draw(self, surface : pg.Surface):
 		surface.blit(self.surface, self.rect)
+		surface.blit(self.dynamic_overlay, self.rect)
+		surface.blit(self.pieces_positions, self.rect)
 
 
 
@@ -137,6 +145,10 @@ class Game:
 			for event in pg.event.get():
 				if event.type == pg.QUIT:
 					self.running = False
+
+				if event.type == pg.MOUSEBUTTONDOWN:
+					if event.button == 1:
+						mouse_position = pg.mouse.get_pos()
 
 			self.table.draw(self.SCREEN)
 
