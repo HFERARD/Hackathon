@@ -4,15 +4,21 @@ from pieces import get_piece
 from locals import *
 
 
-class PiecesManagement: # Pour 4 joueurs à update pour moins
+class PiecesManagement:
+	# Pour 4 joueurs à update pour moins
 	def __init__(self):
 		self.selected_piece : Piece | None = None
 
 		self.pieces = {colour : pg.sprite.Group() for colour in PLAYERS}
 
-		for colour in PLAYERS :
+		for colour in [RED] :
 			for i in range(1, 22):
 				self.pieces[colour].add(Piece.from_id(str(i), colour))
+
+		x_, y_ = (10, 10)
+		for piece in self.pieces[RED]:
+			piece.set_default_position(x_, y_)
+			x_ += piece.rect.width + 10
 
 
 	def select_piece(self, x, y, colour):
@@ -24,6 +30,7 @@ class PiecesManagement: # Pour 4 joueurs à update pour moins
 				self.selected_piece = piece
 
 	def unselect(self):
+		self.selected_piece.reset_position()
 		self.selected_piece = None
 
 
@@ -32,15 +39,22 @@ class PiecesManagement: # Pour 4 joueurs à update pour moins
 			self.selected_piece.set_position(x, y)
 
 	def draw(self, surface: pg.surface):
-		surface.blit(self.selected_piece.image, self.selected_piece.rect)
+		if self.selected_piece is not None:
+			surface.blit(self.selected_piece.image, self.selected_piece.rect)
+		for group in self.pieces.values():
+			for piece in group:
+				piece.draw(surface)
 
 
 class Piece(pg.sprite.Sprite):
 	def __init__(self, piece_matrix, colour: int):
 		pg.sprite.Sprite.__init__(self)
-		self.image = ...
+		self.image = self.image_from_matrix(piece_matrix, colour)
 		self.rect = self.image.get_rect()
-		self.colour = ... # que joueur possède la pièce
+		self.colour = colour # du joueur qui possède la pièce
+		self.piece_matrix = piece_matrix
+
+		self.default_position = (0, 0)
 
 	@staticmethod
 	def image_from_matrix(piece_matrix, colour):
@@ -49,7 +63,7 @@ class Piece(pg.sprite.Sprite):
 
 		:param piece_matrix:
 		:param colour:
-		:return:
+		:return: pygame.Surface
 		"""
 		height, width = (len(piece_matrix) - 2, len(piece_matrix[0]) - 2)
 		pixel_height, pixel_width = (width * SQUARE_SIZE + (width - 1) * LINE_WIDTH,
@@ -66,6 +80,7 @@ class Piece(pg.sprite.Sprite):
 					y = j * SQUARE_SIZE + (j - 1) * LINE_WIDTH
 					pygame.draw.rect(surface, PlAYER_COLOUR[colour], (x, y, SQUARE_SIZE, SQUARE_SIZE))
 
+		return surface
 
 	@classmethod
 	def from_id(cls, id_, colour):
@@ -79,6 +94,13 @@ class Piece(pg.sprite.Sprite):
 
 	def set_position(self, x, y):
 		self.rect.topleft = (x, y)
+
+	def reset_position(self):
+		self.rect.topleft = self.default_position
+
+	def set_default_position(self, x, y):
+		self.default_position = (x, y)
+		self.set_position(x, y)
 
 	def draw(self, surface : pg.Surface):
 		surface.blit(self.image, self.rect)

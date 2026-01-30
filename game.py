@@ -1,6 +1,8 @@
 import pygame as pg
 from sys import exit
 from locals import *
+from graphics import PiecesManagement
+#from pieces import get_piece
 
 SIZE = (1000, 800)
 
@@ -143,6 +145,12 @@ class Game:
 
 		self.table = Board()
 
+		self.pieces_management = PiecesManagement()
+
+		self.clicked = True
+
+		self.current_colour = RED
+
 
 	def run(self):
 		"""
@@ -152,6 +160,7 @@ class Game:
 		"""
 		while self.running:
 			self.SCREEN.fill(GREYc)
+			mx, my = pg.mouse.get_pos()
 
 			for event in pg.event.get():
 				if event.type == pg.QUIT:
@@ -159,7 +168,27 @@ class Game:
 
 				if event.type == pg.MOUSEBUTTONDOWN:
 					if event.button == 1:
-						mouse_position = pg.mouse.get_pos()
+						self.clicked = True
+						self.pieces_management.select_piece(mx, my, self.current_colour)
+				if event.type == pg.MOUSEBUTTONUP:
+					if event.button == 1:
+						self.clicked = False
+						if self.pieces_management.selected_piece is not None:
+							self.pieces_management.unselect()
+
+
+			# Draw table
+			self.table.draw(self.SCREEN)
+
+
+			# Update and draw pieces before they appear on the board
+			self.pieces_management.draw(self.SCREEN)
+			if self.clicked:
+				self.pieces_management.update(mx, my)
+
+
+
+
 
 			pg.display.update()
 			self.CLOCK.tick(self.FPS)
