@@ -2,3 +2,7 @@ RED = 1
 BLUE = 2
 GREEN = 3
 YELLOW = 4
+
+EDGE = 0
+CORNER = -1
+EMPTY = None

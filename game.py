@@ -1,6 +1,6 @@
 import pygame as pg
 from sys import exit
-from locals import *
+from locals import RED, BLUE, GREEN, YELLOW
 
 SIZE = (1000, 600)
 
@@ -44,6 +44,15 @@ class Board:
 						 (i * (SQUARE_SIZE + LINE_WIDTH), 0), (i * (SQUARE_SIZE + LINE_WIDTH), K), width=LINE_WIDTH)
 			pg.draw.line(self.surface, BLACKc,
 						 (0, i * (SQUARE_SIZE + LINE_WIDTH)), (K, i * (SQUARE_SIZE + LINE_WIDTH)), width=LINE_WIDTH)
+
+	def valid_move(self, piece, colour):
+		""" For a piece of colour :colour:, return if this move is valid:
+			- Corner connection
+			- No edges from same colour touch
+		"""
+
+		return True
+
 
 	def add_piece(self, piece ):
 		pass
