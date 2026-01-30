@@ -138,6 +138,12 @@ class Game:
 
 		self.table = Board()
 
+		self.pieces_management = PiecesManagement()
+
+		self.clicked = True
+
+		self.current_colour = RED
+
 
 	def run(self):
 		"""
@@ -160,7 +166,8 @@ class Game:
 				if event.type == pg.MOUSEBUTTONUP:
 					if event.button == 1:
 						self.clicked = False
-						self.pieces_management.unselect()
+						if self.pieces_management.selected_piece is not None:
+							self.pieces_management.unselect()
 
 
 			# Draw table
