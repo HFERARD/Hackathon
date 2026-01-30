@@ -155,6 +155,7 @@ class Board:
 				if self.valid_move(piece, topleft, colour):
 					return True
 		return False
+		# NB : il faudrait prendre en compte les rotations...
 	
 	def draw(self, surface : pg.Surface):
 		surface.blit(self.surface, self.rect)
@@ -240,9 +241,11 @@ class Game:
 
 			pieces_restantes = [sp.piece_matrix for sp in self.pieces_management.pieces[self.current_colour]]
 			if not self.table.playable(pieces_restantes, self.current_colour): # Défaite d'un joueur
+				print(f"Défaite joueur {self.current_colour}")
 				self.running = False
 				continue
 			if pieces_restantes == []: # Victoire d'un joueur
+				print(f"victoire joueur {self.current_colour}")
 				self.running = False
 				continue
 			
