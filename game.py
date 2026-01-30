@@ -170,6 +170,7 @@ class Game:
 						self.clicked = False
 						self.pieces_management.unselect()
 
+
 			# Draw table
 			self.table.draw(self.SCREEN)
 

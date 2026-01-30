@@ -17,7 +17,7 @@ class PiecesManagement:
 
 		x_, y_ = (10, 10)
 		for piece in self.pieces[RED]:
-			piece.set_position(x_, y_)
+			piece.set_default_position(x_, y_)
 			x_ += piece.rect.width + 10
 
 
@@ -30,6 +30,7 @@ class PiecesManagement:
 				self.selected_piece = piece
 
 	def unselect(self):
+		self.selected_piece.reset_position()
 		self.selected_piece = None
 
 
@@ -52,6 +53,8 @@ class Piece(pg.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.colour = colour # du joueur qui possède la pièce
 		self.piece_matrix = piece_matrix
+
+		self.default_position = (0, 0)
 
 	@staticmethod
 	def image_from_matrix(piece_matrix, colour):
@@ -91,6 +94,13 @@ class Piece(pg.sprite.Sprite):
 
 	def set_position(self, x, y):
 		self.rect.topleft = (x, y)
+
+	def reset_position(self):
+		self.rect.topleft = self.default_position
+
+	def set_default_position(self, x, y):
+		self.default_position = (x, y)
+		self.set_position(x, y)
 
 	def draw(self, surface : pg.Surface):
 		surface.blit(self.image, self.rect)
