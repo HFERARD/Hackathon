@@ -1,5 +1,6 @@
 import pygame as pg
 from sys import exit
+from locals import *
 
 SIZE = (1000, 600)
 
@@ -20,6 +21,8 @@ GREYc = (128, 128, 128)
 
 class Board:
 	def __init__(self):
+		# Graphic setup --------------------------
+
 		K = SQUARE_SIZE * N + (N + 1) * LINE_WIDTH
 		self.surface = pg.Surface((K, K))
 		self.surface.fill(WHITEc)
@@ -27,6 +30,11 @@ class Board:
 		self.rect.center = (500, 300)
 
 		self.draw_grid()
+
+
+		# Positions setup --------------------------
+
+		self.status = [[0 for i in range(N)] for j in range(N)] # status of the board at current state
 
 
 	def draw_grid(self):
@@ -37,13 +45,13 @@ class Board:
 			pg.draw.line(self.surface, BLACKc,
 						 (0, i * (SQUARE_SIZE + LINE_WIDTH)), (K, i * (SQUARE_SIZE + LINE_WIDTH)), width=LINE_WIDTH)
 
+	def add_piece(self, piece ):
+		pass
+
+
 	def draw(self, surface : pg.Surface):
 		surface.blit(self.surface, self.rect)
 
-
-def draw_table(table: list[list[int]]):
-
-	pass
 
 
 
