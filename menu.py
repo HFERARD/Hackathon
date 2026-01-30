@@ -19,11 +19,11 @@ SIZE = (1400, 800)
 
 # offset de 11 de chaque coté du tableau
 class Block:
-	def __init__(self):
-		self.surface=pg.Surface((150,50))
+	def __init__(self, length, width, pos_x, pos_y):
+		self.surface=pg.Surface((length,width))
 		self.surface.fill(WHITEc)
 		self.rect= self.surface.get_rect()
-		self.rect.center = (500,400)
+		self.rect.center = (pos_x,pos_y)
 		
 	def draw(self, surface):
 		surface.blit(self.surface, self.rect)
@@ -32,15 +32,26 @@ class Block:
 		pass
 
 class Textblock(Block):
-	def __init__(self, title):
-		Block .__init__(self)
-		self.tag=title
+	def __init__(self, writing, length, width, pos_x, pos_y):
+		Block .__init__(self, length, width, pos_x, pos_y)
+		self.tag = writing
 		self.font = pg.font.SysFont(name= "Arial", size= 30)
 		self.text= self.font.render(self.tag, True, BLACKc)
 
 	def draw(self, surface):
 		surface.blit(self.surface, self.rect)
-		surface.blit(self.text, (475,380))
+		surface.blit(self.text, self.rect)
+
+class Button(Block):
+	def __init__(self, title, length, width, pos_x,pos_y):
+		Block .__init__(self, length, width, pos_x,pos_y)
+		self.tag=title
+		self.font = pg.font.SysFont(name= "Arial", size= 50)
+		self.text= self.font.render(self.tag, True, BLACKc)
+
+	def draw(self, surface):
+		surface.blit(self.surface, self.rect)
+		surface.blit(self.text, self.rect)
 		self.update()
 
 	def mouse_on_block(self):
@@ -50,11 +61,11 @@ class Textblock(Block):
 	def update(self):
 		if self.mouse_on_block():
 			self.surface.fill(BLACKc)
-			self.font = pg.font.SysFont(name= "Arial", size= 30)
+			self.font = pg.font.SysFont(name= "Arial", size= 50)
 			self.text= self.font.render(self.tag, True, WHITEc)
 		else:
 			self.surface.fill(WHITEc)
-			self.font = pg.font.SysFont(name= "Arial", size= 30)
+			self.font = pg.font.SysFont(name= "Arial", size= 50)
 			self.text= self.font.render(self.tag, True, BLACKc)
 
 	def clicked(self):
@@ -209,7 +220,9 @@ class Game:
 
 	#Game variables -----
 
-		self.button = Textblock('Start')
+		self.button = Button('Start',150,50,700,400)
+
+		self.instruction = Textblock("Instructions:\nTo rotate the selected piece, press keyspace \n To flip the selected piece, press the v key", 0, 0, 200, 600)
 
 		self.table = Board()
 
@@ -231,7 +244,7 @@ class Game:
 		while self.running:
 			
 			if self.status==0:
-				self.SCREEN.fill(GREENc)
+				self.SCREEN.fill(MENU_BLUE)
 				for event in pg.event.get():
 					if event.type == pg.QUIT:
 						self.running = False
@@ -244,6 +257,7 @@ class Game:
 							mouse_position = pg.mouse.get_pos()
 
 				self.button.draw(self.SCREEN)
+				self.instruction.draw(self.SCREEN)
 			
 			elif self.status==1:
 				self.SCREEN.fill(GREYc)
@@ -265,19 +279,24 @@ class Game:
 									moved = self.table.dynamic_add(mx, my, self.pieces_management.selected_piece)
 									if DEBUG_MODE:
 										self.table.print(self.current_colour)
+
 									if moved :
 										self.pieces_management.remove(self.current_colour)
 										self.current_index = (self.current_index + 1) % 4
 										self.current_colour = PLAYERS[self.current_index]
+
 								self.pieces_management.unselect()
 					if event.type == pg.KEYDOWN:
 						if event.key == pg.K_SPACE:
 							if self.pieces_management.selected_piece is not None:
 								self.pieces_management.selected_piece.rotate()
-								print('aaaahh')
+						if event.key == pg.K_v:
+							if self.pieces_management.selected_piece is not None:
+								self.pieces_management.selected_piece.symetry()
 
 
-			# Draw table
+
+				# Draw table
 				self.table.draw(self.SCREEN)
 
 
@@ -285,6 +304,7 @@ class Game:
 				self.pieces_management.draw(self.SCREEN)
 				if self.clicked:
 					self.pieces_management.update(mx, my)
+
 
 
 
