@@ -215,6 +215,11 @@ class Game:
 									self.current_index = (self.current_index + 1) % 4
 									self.current_colour = PLAYERS[self.current_index]
 							self.pieces_management.unselect()
+				if event.type == pg.KEYDOWN:
+					if event.key == pg.K_SPACE:
+						if self.pieces_management.selected_piece is not None:
+							self.pieces_management.selected_piece.rotate()
+							print('aaaahh')
 
 
 			# Draw table
