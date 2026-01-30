@@ -66,7 +66,7 @@ class Piece(pg.sprite.Sprite):
 		:return: pygame.Surface
 		"""
 		height, width = (len(piece_matrix) - 2, len(piece_matrix[0]) - 2)
-		pixel_height, pixel_width = (width * SQUARE_SIZE + (width - 1) * LINE_WIDTH,
+		pixel_width, pixel_height = (width * SQUARE_SIZE + (width - 1) * LINE_WIDTH,
 									 height * SQUARE_SIZE + (height - 1) * LINE_WIDTH)
 
 		surface = pygame.Surface((pixel_width, pixel_height))
@@ -76,8 +76,8 @@ class Piece(pg.sprite.Sprite):
 		for i in range(height):
 			for j in range(width):
 				if piece_matrix[i+1][j+1] == 1:
-					x = i * SQUARE_SIZE + (i - 1) * LINE_WIDTH
-					y = j * SQUARE_SIZE + (j - 1) * LINE_WIDTH
+					x = j * SQUARE_SIZE + (j - 1) * LINE_WIDTH
+					y = i * SQUARE_SIZE + (i - 1) * LINE_WIDTH
 					pygame.draw.rect(surface, PlAYER_COLOUR[colour], (x, y, SQUARE_SIZE, SQUARE_SIZE))
 
 		return surface

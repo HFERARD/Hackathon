@@ -1,7 +1,7 @@
 import pygame as pg
 from sys import exit
 from locals import *
-from graphics import PiecesManagement
+from graphics import PiecesManagement, Piece
 #from pieces import get_piece
 
 SIZE = (1000, 800)
@@ -120,6 +120,14 @@ class Board:
 		surface.blit(self.dynamic_overlay, self.rect)
 		surface.blit(self.pieces_positions, self.rect)
 
+	def dynamic_add(self, x, y, piece: Piece):
+		i = (x - (self.rect.left + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
+		j = (y - (self.rect.top + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
+
+		print(i, j)
+		self.add_piece(piece.piece_matrix, (i,j), piece.colour)
+
+
 
 
 class Game:
@@ -167,6 +175,9 @@ class Game:
 					if event.button == 1:
 						self.clicked = False
 						if self.pieces_management.selected_piece is not None:
+							if self.table.rect.collidepoint(mx, my):
+								self.table.dynamic_add(mx, my, self.pieces_management.selected_piece)
+
 							self.pieces_management.unselect()
 
 
@@ -178,9 +189,6 @@ class Game:
 			self.pieces_management.draw(self.SCREEN)
 			if self.clicked:
 				self.pieces_management.update(mx, my)
-
-
-
 
 
 			pg.display.update()
