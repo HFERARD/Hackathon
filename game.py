@@ -131,7 +131,6 @@ class Board:
 						for c in [0, 1, 2, 3]:
 							if c != colour:
 								self.status[i + y + 1][j + x + 1][c] = -1
-					
 					# Draw to surface
 					if stat == 1:
 						pg.draw.rect(self.pieces_positions, PlAYER_COLOUR[colour],
@@ -142,13 +141,18 @@ class Board:
 
 
 	def playable(self, pieces_restantes, colour):
-		for piece in pieces_restantes[colour]:
-			for topleft in [[(x, y) for x in range(N)] for y in range(N)]:
+		"""
+		Renvoie `True` ssi le joueur `colour` a encore des coups possibles
+		:param pieces_restantes: Liste des matrices des pièces restantes pour le joueur considéré
+		:param colour: joueur
+		:return: Bool
+		"""
+		for piece in pieces_restantes:
+			for topleft in [(x, y) for x in range(N) for y in range(N)]:
 				if self.valid_move(piece, topleft, colour):
 					return True
 		return False
-
-
+	
 	def draw(self, surface : pg.Surface):
 		surface.blit(self.surface, self.rect)
 		surface.blit(self.dynamic_overlay, self.rect)
@@ -195,6 +199,14 @@ class Game:
 			self.SCREEN.fill(GREYc)
 			mx, my = pg.mouse.get_pos()
 
+			pieces_restantes = [sp.piece_matrix for sp in self.pieces_management.pieces[self.current_colour]]
+			if not self.table.playable(pieces_restantes, self.current_colour): # Défaite d'un joueur
+				self.running = False
+				continue
+			if pieces_restantes == []: # Victoire d'un joueur
+				self.running = False
+				continue
+			
 			for event in pg.event.get():
 				if event.type == pg.QUIT:
 					self.running = False
