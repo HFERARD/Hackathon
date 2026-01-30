@@ -2,13 +2,12 @@
 import pygame as pg
 import sys
 from locals import *
-
+from graphics import PiecesManagement, Piece
 #from pieces import get_piece
 
-SIZE = (1000, 800)
-
 pg.font.init()
-
+DEBUG_MODE = True
+SIZE = (1400, 800)
 
 """
 -1 : case non-jouable pour le joueur selectionné
@@ -20,11 +19,11 @@ pg.font.init()
 
 # offset de 11 de chaque coté du tableau
 class Block:
-	def __init__(self):
-		self.surface=pg.Surface((150,50))
+	def __init__(self, length, width, pos_x, pos_y):
+		self.surface=pg.Surface((length,width))
 		self.surface.fill(WHITEc)
 		self.rect= self.surface.get_rect()
-		self.rect.center = (500,400)
+		self.rect.center = (pos_x,pos_y)
 		
 	def draw(self, surface):
 		surface.blit(self.surface, self.rect)
@@ -33,15 +32,26 @@ class Block:
 		pass
 
 class Textblock(Block):
-	def __init__(self, title):
-		Block .__init__(self)
-		self.tag=title
+	def __init__(self, writing, length, width, pos_x, pos_y):
+		Block .__init__(self, length, width, pos_x, pos_y)
+		self.tag = writing
 		self.font = pg.font.SysFont(name= "Arial", size= 30)
 		self.text= self.font.render(self.tag, True, BLACKc)
 
 	def draw(self, surface):
 		surface.blit(self.surface, self.rect)
-		surface.blit(self.text, (475,380))
+		surface.blit(self.text, self.rect)
+
+class Button(Block):
+	def __init__(self, title, length, width, pos_x,pos_y):
+		Block .__init__(self, length, width, pos_x,pos_y)
+		self.tag=title
+		self.font = pg.font.SysFont(name= "Arial", size= 50)
+		self.text= self.font.render(self.tag, True, BLACKc)
+
+	def draw(self, surface):
+		surface.blit(self.surface, self.rect)
+		surface.blit(self.text, self.rect)
 		self.update()
 
 	def mouse_on_block(self):
@@ -51,11 +61,11 @@ class Textblock(Block):
 	def update(self):
 		if self.mouse_on_block():
 			self.surface.fill(BLACKc)
-			self.font = pg.font.SysFont(name= "Arial", size= 30)
+			self.font = pg.font.SysFont(name= "Arial", size= 50)
 			self.text= self.font.render(self.tag, True, WHITEc)
 		else:
 			self.surface.fill(WHITEc)
-			self.font = pg.font.SysFont(name= "Arial", size= 30)
+			self.font = pg.font.SysFont(name= "Arial", size= 50)
 			self.text= self.font.render(self.tag, True, BLACKc)
 
 	def clicked(self):
@@ -69,7 +79,7 @@ class Board:
 		self.surface = pg.Surface((K, K))
 		self.surface.fill(WHITEc)
 		self.rect = self.surface.get_rect()
-		self.rect.center = (500, 400)
+		self.rect.center = (700, 400)
 
 		self.dynamic_overlay = self.surface.copy()
 		self.dynamic_overlay.set_colorkey(WHITEc)
@@ -81,7 +91,16 @@ class Board:
 
 		# Positions setup --------------------------
 
-		self.status = [[[0, 0, 0, 0] for i in range(N)] for j in range(N)] # status of the board at current state
+		self.status = [[[0, 0, 0, 0] for i in range(N+2)] for j in range(N+2)] # status of the board at current state
+		for i in range(0,N+2):
+			self.status[i][0] = [-1, -1, -1, -1]
+			self.status[i][N+1] = [-1, -1, -1, -1]
+			self.status[0][i] = [-1, -1, -1, -1]
+			self.status[N+1][i] = [-1, -1, -1, -1]
+		self.status[1][1] = [10,10,10,10]
+		self.status[1][N] = [10,10,10,10]
+		self.status[N][1] = [10,10,10,10]
+		self.status[N][N] = [10,10,10,10]
 		# sur chaque case [joueur1, joueur2, joueur3, joueur4]
 
 		#self.add_piece()
@@ -89,6 +108,14 @@ class Board:
 	@staticmethod
 	def real_position(i):
 		return SQUARE_SIZE * i + (i + 1) * LINE_WIDTH
+
+	def print(self, colour):
+		for row in self.status:
+			print('|', end='')
+			for stat in row:
+				print(stat[colour], end='|')
+			print()
+			print(2 * (N+1) * '-')
 
 
 	def draw_grid(self):
@@ -113,18 +140,18 @@ class Board:
 		lignes = len(piece)
 		colonnes = len(piece[0])
 		corner = False # vérifie si deux coins se touchent càd si la pièce recouvre au moins un 10
-		for i in range(colonnes):
-			for j in range(lignes):
-				x, y = (i, j) + topleft # coordonnées
+		for j in range(colonnes):
+			for i in range(lignes):
+				x, y = (j + topleft[0], i + topleft[1])  # coordonnées
 				if piece[i][j] == 1:
-					if self.status[x][y][colour] == -1: # Case non-jouable
+					if self.status[y][x][colour] == -1: # Case non-jouable
 						return False
-					if self.status[x][y][colour] == 10: # Case adjacente à un coin
+					if self.status[y][x][colour] == 10: # Case adjacente à un coin
 						corner = True
 		return corner
 
 
-	def add_piece(self, piece, topleft, colour: int):
+	def add_piece(self, piece, topleft, colour: int) -> bool:
 		"""
 		:param piece: matrice de type
 		:param topleft: position du carré (x, y)
@@ -135,25 +162,48 @@ class Board:
 		"""
 
 		x, y = (topleft[0] - 1, topleft[1] - 1)
-		if self.valid_move(piece, colour):
+		if self.valid_move(piece, topleft, colour):
 			for i, row in enumerate(piece):
 				for j, stat in enumerate(row):
 					# Add to status board
-					self.status[i + x][j + y][colour] = piece[i][j]
+					case = self.status[i + y + 1][j + x + 1][colour]
+					if case == 0:
+						self.status[i + y + 1][j + x + 1][colour] = piece[i][j]
+					elif case == 10 and (piece[i][j] == -1 or piece[i][j] == 1):
+						self.status[i + y + 1][j + x + 1][colour] = piece[i][j]
+					
+					if self.status[i + y + 1 ][j + x + 1][colour] == 1:
+						for c in [0, 1, 2, 3]:
+							if c != colour:
+								self.status[i + y + 1][j + x + 1][c] = -1
+					
 					# Draw to surface
 					if stat == 1:
 						pg.draw.rect(self.pieces_positions, PlAYER_COLOUR[colour],
-								(self.real_position(i + x), self.real_position(j + y) ,
+								(self.real_position(j + x), self.real_position(i + y),
 								 SQUARE_SIZE, SQUARE_SIZE))
+			return True
+		return False
 
-	def update(self):
-		pass
+
+	def playable(self, pieces_restantes, colour):
+		for piece in pieces_restantes[colour]:
+			for topleft in [[(x, y) for x in range(N)] for y in range(N)]:
+				if self.valid_move(piece, topleft, colour):
+					return True
+		return False
 
 
 	def draw(self, surface : pg.Surface):
 		surface.blit(self.surface, self.rect)
 		surface.blit(self.dynamic_overlay, self.rect)
 		surface.blit(self.pieces_positions, self.rect)
+
+	def dynamic_add(self, x, y, piece: Piece):
+		i = (x - (self.rect.left + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
+		j = (y - (self.rect.top + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
+
+		return self.add_piece(piece.piece_matrix, (i,j), piece.colour)
 
 
 class Game:
@@ -168,10 +218,23 @@ class Game:
 
 		pg.display.set_caption('Blokus | Game by MPVH')
 
-		self.button = Textblock('Start')
+	#Game variables -----
+
+		self.button = Button('Start',150,50,700,400)
+
+		self.instruction = Textblock("Instructions:\nTo rotate the selected piece, press keyspace \n To flip the selected piece, press the v key", 0, 0, 200, 600)
+
 		self.table = Board()
+
 		self.status = 0 #Status égale 0 si on est sur le menu de base et 1 si on est sur la grille
 
+		self.pieces_management = PiecesManagement()
+
+		self.clicked = True
+
+		self.current_colour = RED
+		self.current_index = 0
+		
 	def run(self):
 		"""
 		Main game loop
@@ -179,9 +242,9 @@ class Game:
 		- return None
 		"""
 		while self.running:
-			self.SCREEN.fill(GREYc)
+			
 			if self.status==0:
-
+				self.SCREEN.fill(MENU_BLUE)
 				for event in pg.event.get():
 					if event.type == pg.QUIT:
 						self.running = False
@@ -194,17 +257,56 @@ class Game:
 							mouse_position = pg.mouse.get_pos()
 
 				self.button.draw(self.SCREEN)
+				self.instruction.draw(self.SCREEN)
 			
 			elif self.status==1:
+				self.SCREEN.fill(GREYc)
+				mx, my = pg.mouse.get_pos()
+
 				for event in pg.event.get():
 					if event.type == pg.QUIT:
 						self.running = False
 
 					if event.type == pg.MOUSEBUTTONDOWN:
 						if event.button == 1:
-							mouse_position = pg.mouse.get_pos()
+							self.clicked = True
+							self.pieces_management.select_piece(mx, my, self.current_colour)
+					if event.type == pg.MOUSEBUTTONUP:
+						if event.button == 1:
+							self.clicked = False
+							if self.pieces_management.selected_piece is not None:
+								if self.table.rect.collidepoint(mx, my):
+									moved = self.table.dynamic_add(mx, my, self.pieces_management.selected_piece)
+									if DEBUG_MODE:
+										self.table.print(self.current_colour)
 
+									if moved :
+										self.pieces_management.remove(self.current_colour)
+										self.current_index = (self.current_index + 1) % 4
+										self.current_colour = PLAYERS[self.current_index]
+
+								self.pieces_management.unselect()
+					if event.type == pg.KEYDOWN:
+						if event.key == pg.K_SPACE:
+							if self.pieces_management.selected_piece is not None:
+								self.pieces_management.selected_piece.rotate()
+						if event.key == pg.K_v:
+							if self.pieces_management.selected_piece is not None:
+								self.pieces_management.selected_piece.symetry()
+
+
+
+				# Draw table
 				self.table.draw(self.SCREEN)
+
+
+			# Update and draw pieces before they appear on the board
+				self.pieces_management.draw(self.SCREEN)
+				if self.clicked:
+					self.pieces_management.update(mx, my)
+
+
+
 
 			pg.display.update()
 			self.CLOCK.tick(self.FPS)

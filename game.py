@@ -1,5 +1,8 @@
 import pygame as pg
 from sys import exit
+
+import pygame.draw
+
 from locals import *
 from graphics import PiecesManagement, Piece
 #from pieces import get_piece
@@ -7,7 +10,7 @@ from graphics import PiecesManagement, Piece
 pg.font.init()
 
 # IMPLEMENTATION / TEST
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 
 # ----------------------
@@ -155,14 +158,50 @@ class Board:
 	
 	def draw(self, surface : pg.Surface):
 		surface.blit(self.surface, self.rect)
+
 		surface.blit(self.dynamic_overlay, self.rect)
+
 		surface.blit(self.pieces_positions, self.rect)
 
 	def dynamic_add(self, x, y, piece: Piece):
-		i = (x - (self.rect.left + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
-		j = (y - (self.rect.top + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
+		i = (x - (self.rect.left + LINE_WIDTH) + SQUARE_SIZE//2) // (SQUARE_SIZE + LINE_WIDTH)
+		j = (y - (self.rect.top + LINE_WIDTH) + SQUARE_SIZE//2) // (SQUARE_SIZE + LINE_WIDTH)
 
 		return self.add_piece(piece.piece_matrix, (i,j), piece.colour)
+
+	def shadow_piece(self, x, y, piece: Piece):
+
+		"""
+
+		Pas complètement déployé... il reste un erreur ici
+		:param x:
+		:param y:
+		:param piece:
+		:return:
+		"""
+		self.erase_shadow()
+
+		i = (x - (self.rect.left + LINE_WIDTH) + SQUARE_SIZE // 2) // (SQUARE_SIZE + LINE_WIDTH)
+		j = (y - (self.rect.top + LINE_WIDTH) + SQUARE_SIZE // 2) // (SQUARE_SIZE + LINE_WIDTH)
+
+		#if self.valid_move(piece.piece_matrix, (i,j), piece.colour):
+			#c = GREYc
+		#else :
+			#c = (255, 128, 128)
+		c = GREYc
+
+
+		for k, row in enumerate(piece.piece_matrix):
+			for l, stat in enumerate(row):
+				if stat == 1:
+					x_ = self.real_position(i + l - 1)
+					y_ = self.real_position(j + k - 1)
+					pygame.draw.rect(self.dynamic_overlay, c,
+									 (x_, y_, SQUARE_SIZE, SQUARE_SIZE))
+
+
+	def erase_shadow(self):
+		self.dynamic_overlay.fill(WHITEc)
 
 
 class Game:
@@ -218,16 +257,28 @@ class Game:
 				if event.type == pg.MOUSEBUTTONUP:
 					if event.button == 1:
 						self.clicked = False
+						self.table.erase_shadow()
 						if self.pieces_management.selected_piece is not None:
 							if self.table.rect.collidepoint(mx, my):
 								moved = self.table.dynamic_add(mx, my, self.pieces_management.selected_piece)
 								if DEBUG_MODE:
 									self.table.print(self.current_colour)
+
 								if moved :
 									self.pieces_management.remove(self.current_colour)
 									self.current_index = (self.current_index + 1) % 4
 									self.current_colour = PLAYERS[self.current_index]
+
+
 							self.pieces_management.unselect()
+				if event.type == pg.KEYDOWN:
+					if event.key == pg.K_SPACE:
+						if self.pieces_management.selected_piece is not None:
+							self.pieces_management.selected_piece.rotate()
+					if event.key == pg.K_v:
+						if self.pieces_management.selected_piece is not None:
+							self.pieces_management.selected_piece.symetry()
+
 
 
 			# Draw table
@@ -238,6 +289,10 @@ class Game:
 			self.pieces_management.draw(self.SCREEN)
 			if self.clicked:
 				self.pieces_management.update(mx, my)
+				if self.pieces_management.selected_piece is not None:
+					self.table.shadow_piece(mx, my, self.pieces_management.selected_piece)
+				else :
+					self.table.erase_shadow() # Loin 'être optimal donc à modifier
 
 
 			pg.display.update()
