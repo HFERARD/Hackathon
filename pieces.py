@@ -187,6 +187,8 @@ def get_piece(id):
                 new_piece[i][j] = 0
             elif piece[i][j] == 0:
                 new_piece[i][j] = -1
+            elif piece[i][j] == 1:
+                new_piece[i][j] = 1
             else:
                 new_piece[i][j] = 10
     return new_piece
