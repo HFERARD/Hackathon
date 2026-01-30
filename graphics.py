@@ -9,6 +9,11 @@ class Piece(pg.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.colour = ... # que joueur possède la pièce
 
+	@classmethod
+	def from_piece(cls, piece_matrix):
+		height, width = ..., ...
+
+
 	def set_position(self, x, y):
 		self.rect.topleft = (x, y)
 
