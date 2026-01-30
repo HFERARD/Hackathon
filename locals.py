@@ -3,6 +3,21 @@ BLUE = 1
 GREEN = 2
 YELLOW = 3
 
-EDGE = 0
-CORNER = -1
-EMPTY = None
+
+SQUARE_SIZE = 27
+LINE_WIDTH = 2
+N = 20
+
+
+WHITEc = (255, 255, 255)
+BLACKc = (0, 0, 0)
+REDc = (255, 0, 0)
+GREENc = (0, 255, 0)
+BLUEc = (0, 0, 255)
+YELLOWc = (255, 255, 0)
+GREYc = (128, 128, 128)
+
+
+PlAYER_COLOUR = {
+	RED : REDc, BLUE : BLUEc, YELLOW : YELLOWc, GREEN : GREENc
+}

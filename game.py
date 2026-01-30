@@ -1,27 +1,10 @@
 import pygame as pg
 from sys import exit
-from locals import RED, BLUE, GREEN, YELLOW
+from locals import *
 #from pieces import get_piece
 
 SIZE = (1000, 800)
 
-SQUARE_SIZE = 27
-LINE_WIDTH = 2
-N = 20
-
-
-WHITEc = (255, 255, 255)
-BLACKc = (0, 0, 0)
-REDc = (255, 0, 0)
-GREENc = (0, 255, 0)
-BLUEc = (0, 0, 255)
-YELLOWc = (255, 255, 0)
-GREYc = (128, 128, 128)
-
-
-PlAYER_COLOUR = {
-	RED : REDc, BLUE : BLUEc, YELLOW : YELLOWc, GREEN : GREENc
-}
 
 """
 -1 : case non-jouable pour le joueur selectionné
@@ -43,8 +26,10 @@ class Board:
 		self.rect = self.surface.get_rect()
 		self.rect.center = (500, 400)
 
-		self.dynamic_overlay = self.surface.copy().set_colorkey(WHITEc)
-		self.pieces_positions = self.surface.copy().set_colorkey(WHITEc)
+		self.dynamic_overlay = self.surface.copy()
+		self.dynamic_overlay.set_colorkey(WHITEc)
+		self.pieces_positions = self.surface.copy()
+		self.pieces_positions.set_colorkey(WHITEc)
 
 		self.draw_grid()
 
