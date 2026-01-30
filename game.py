@@ -131,7 +131,6 @@ class Board:
 		i = (x - (self.rect.left + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
 		j = (y - (self.rect.top + LINE_WIDTH)) // (SQUARE_SIZE + LINE_WIDTH)
 
-		print(i, j)
 		self.add_piece(piece.piece_matrix, (i,j), piece.colour)
 
 
@@ -184,7 +183,7 @@ class Game:
 						if self.pieces_management.selected_piece is not None:
 							if self.table.rect.collidepoint(mx, my):
 								self.table.dynamic_add(mx, my, self.pieces_management.selected_piece)
-
+								self.pieces_management.remove(self.current_colour)
 							self.pieces_management.unselect()
 
 

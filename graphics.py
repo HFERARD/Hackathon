@@ -45,6 +45,9 @@ class PiecesManagement:
 			for piece in group:
 				piece.draw(surface)
 
+	def remove(self, colour):
+		self.pieces[colour].remove(self.selected_piece)
+
 
 class Piece(pg.sprite.Sprite):
 	def __init__(self, piece_matrix, colour: int):
