@@ -11,14 +11,38 @@ class PiecesManagement:
 
 		self.pieces = {colour : pg.sprite.Group() for colour in PLAYERS}
 
-		for colour in [RED] :
+		for colour in PLAYERS :
 			for i in range(1, 22):
 				self.pieces[colour].add(Piece.from_id(str(i), colour))
-
 		x_, y_ = (10, 10)
 		for piece in self.pieces[RED]:
 			piece.set_default_position(x_, y_)
 			x_ += piece.rect.width + 10
+
+		x_, y_ = (10, 710)
+		for piece in self.pieces[GREEN]:
+			piece.set_default_position(x_, y_)
+			x_ += piece.rect.width + 10
+
+
+		x_, y_ = (59, 109)
+		for k, piece in enumerate(self.pieces[YELLOW]):
+			piece.set_default_position(x_, y_)
+			if k%4 != 0:
+				x_ += piece.rect.width + 10
+			else:
+				y_ += 100
+				x_ = 59
+
+
+		x_, y_ = (1100, 109)
+		for k, piece in enumerate(self.pieces[BLUE]):
+			piece.set_default_position(x_, y_)
+			if k%4 != 0:
+				x_ += piece.rect.width + 10
+			else:
+				y_ += 100
+				x_ = 1100
 
 
 	def select_piece(self, x, y, colour):
