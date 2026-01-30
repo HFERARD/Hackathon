@@ -38,15 +38,15 @@ class Board:
 		# Positions setup --------------------------
 
 		self.status = [[[0, 0, 0, 0] for i in range(N+2)] for j in range(N+2)] # status of the board at current state
-		for i in range(1,N+1):
+		for i in range(0,N+2):
 			self.status[i][0] = [-1, -1, -1, -1]
 			self.status[i][N+1] = [-1, -1, -1, -1]
 			self.status[0][i] = [-1, -1, -1, -1]
 			self.status[N+1][i] = [-1, -1, -1, -1]
-		self.status[0][0] = [10,10,10,10]
-		self.status[0][N+1] = [10,10,10,10]
-		self.status[N+1][0] = [10,10,10,10]
-		self.status[N+1][N+1] = [10,10,10,10]
+		self.status[1][1] = [10,10,10,10]
+		self.status[1][N] = [10,10,10,10]
+		self.status[N][1] = [10,10,10,10]
+		self.status[N][N] = [10,10,10,10]
 		# sur chaque case [joueur1, joueur2, joueur3, joueur4]
 
 		#self.add_piece()
@@ -78,13 +78,13 @@ class Board:
 		lignes = len(piece)
 		colonnes = len(piece[0])
 		corner = False # vérifie si deux coins se touchent càd si la pièce recouvre au moins un 10
-		for i in range(colonnes):
-			for j in range(lignes):
+		for j in range(colonnes):
+			for i in range(lignes):
 				x, y = (i + topleft[0], j + topleft[1])  # coordonnées
 				if piece[i][j] == 1:
-					if self.status[x][y][colour] == -1: # Case non-jouable
+					if self.status[y][x][colour] == -1: # Case non-jouable
 						return False
-					if self.status[x][y][colour] == 10: # Case adjacente à un coin
+					if self.status[y][x][colour] == 10: # Case adjacente à un coin
 						corner = True
 		return corner
 
@@ -100,15 +100,15 @@ class Board:
 		"""
 
 		x, y = (topleft[0] - 1, topleft[1] - 1)
-		if self.valid_move(piece, colour):
+		if self.valid_move(piece, topleft, colour):
 			for i, row in enumerate(piece):
 				for j, stat in enumerate(row):
 					# Add to status board
-					self.status[i + x][j + y][colour] = piece[i][j]
+					self.status[i + y][j + x][colour] = piece[i][j]
 					# Draw to surface
 					if stat == 1:
 						pg.draw.rect(self.pieces_positions, PlAYER_COLOUR[colour],
-								(self.real_position(i + x), self.real_position(j + y) ,
+								(self.real_position(j + x), self.real_position(i + y),
 								 SQUARE_SIZE, SQUARE_SIZE))
 
 	def update(self):
@@ -137,14 +137,6 @@ class Game:
 		# Game variables -------------------
 
 		self.table = Board()
-
-		self.pieces_management = PiecesManagement()
-
-
-		# Interaction variables ------------
-
-		self.clicked = False
-		self.current_colour = RED
 
 
 	def run(self):
