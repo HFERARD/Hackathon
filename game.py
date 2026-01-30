@@ -36,7 +36,16 @@ class Board:
 
 		# Positions setup --------------------------
 
-		self.status = [[[0, 0, 0, 0] for i in range(N)] for j in range(N)] # status of the board at current state
+		self.status = [[[0, 0, 0, 0] for i in range(N+2)] for j in range(N+2)] # status of the board at current state
+		for i in range(1,N+1):
+			self.status[i][0] = [-1, -1, -1, -1]
+			self.status[i][N+1] = [-1, -1, -1, -1]
+			self.status[0][i] = [-1, -1, -1, -1]
+			self.status[N+1][i] = [-1, -1, -1, -1]
+		self.status[0][0] = [10,10,10,10]
+		self.status[0][N+1] = [10,10,10,10]
+		self.status[N+1][0] = [10,10,10,10]
+		self.status[N+1][N+1] = [10,10,10,10]
 		# sur chaque case [joueur1, joueur2, joueur3, joueur4]
 
 		#self.add_piece()
@@ -70,7 +79,7 @@ class Board:
 		corner = False # vérifie si deux coins se touchent càd si la pièce recouvre au moins un 10
 		for i in range(colonnes):
 			for j in range(lignes):
-				x, y = (i, j) + topleft # coordonnées
+				x, y = (i + topleft[0], j + topleft[1])  # coordonnées
 				if piece[i][j] == 1:
 					if self.status[x][y][colour] == -1: # Case non-jouable
 						return False
