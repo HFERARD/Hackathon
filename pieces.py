@@ -173,6 +173,20 @@ def rotation_sens_trigo(piece):
             new_piece[colonne-1-j][i] = piece[i][j]
     return new_piece
 
+def symetrie_verticale(piece):
+    """
+    t'a capté mon reuf"
+    """
+    ligne = len(piece)
+    colonne = len(piece[0])
+    new_piece = [[0 for j in range(colonne)] for i in range(ligne)]
+    for i in range(ligne):
+        for j in range(colonne):
+            new_piece[i][j] = piece[i][colonne-1-j]
+    return new_piece
+ 
+
+
 def get_piece(id):
     piece = pieces[id]
     """
@@ -203,4 +217,5 @@ def affiche(piece):
         print(ligne)
     print()
 
-affiche(get_piece("1"))
+affiche(get_piece("6"))
+affiche(symetrie_verticale(get_piece("6")))
