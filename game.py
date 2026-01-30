@@ -97,7 +97,7 @@ class Board:
 		corner = False # vérifie si deux coins se touchent càd si la pièce recouvre au moins un 10
 		for j in range(colonnes):
 			for i in range(lignes):
-				x, y = (i + topleft[0], j + topleft[1])  # coordonnées
+				x, y = (j + topleft[0], i + topleft[1])  # coordonnées
 				if piece[i][j] == 1:
 					if self.status[y][x][colour] == -1: # Case non-jouable
 						return False
